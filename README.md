@@ -50,7 +50,7 @@ pip install textual requests
 JellyCLI loads a simple JSON config at:
 
 ```
-~/Projects/JellyCLI/config.json
+./config.json
 ```
 
 Fields:
@@ -67,8 +67,6 @@ Fields:
 - **server_url**: your Jellyfin base URL (http/https, with port if needed)
 - **username / password**: your Jellyfin credentials
 - **show_greeting**: toggles the greeting banner in the home view
-- **skip-segments**: which server‑defined segments to skip globally  
-  Leave **empty** (`[]`) to **disable** auto‑skip.
 
 > **First run / missing config**  
 > If `config.json` is missing or incomplete, JellyCLI will guide you through:
@@ -122,53 +120,10 @@ python main.py
 
 ---
 
-## Resume & Progress Sync
-
-- Starting from **Continue Watching** resumes from the server’s saved time.
-- While playing in mpv, JellyCLI **periodically updates progress** and also on **pause/quit** events.
-- When playback ends, the **home view refreshes**, so **Next Up** and **Continue Watching** reflect your latest state.
-
----
-
-## Watch State
-
-- Press **m** on any show/season/episode/movie to mark **watched/unwatched**.
-- **Unwatched items** are shown with a subtle dot indicator.
-- Changing watch state immediately refreshes **Continue Watching** / **Next Up**.
-
----
-
-## Open in Browser
-
-Press **o**:
-
-- **Folders** (show, season): opens that page in Jellyfin web
-- **Items** (episode, movie): starts playback in the browser
-
----
-
-## Packaging (optional)
-
-If you want a single binary:
-
-```bash
-pip install pyinstaller
-pyinstaller --onefile --name jellycli main.py
-```
-
-- Users will still need **mpv** available on their systems.
-- On macOS gatekeeper, you may need to allow the binary to run.
-
----
-
 ## Troubleshooting
 
 - **Playback doesn’t start**: ensure `mpv` is installed and on PATH.
-- **Resume/skip doesn’t work**:
-  - Confirm the item shows segments/markers in Jellyfin web.
-  - Verify your `skip-segments` includes the parts you want to skip.
-- **Auth fails**: try your credentials in Jellyfin web; check `server_url` (scheme/port).
-- **Networking**: if Jellyfin runs on a different host/port, confirm local firewall rules.
+	- If you are using Linux, I highly recommend installing the Flatpak version of `mpv`
 
 ---
 
