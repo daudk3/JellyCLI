@@ -1,6 +1,6 @@
 # JellyCLI
 
-A fast, keyboard‑friendly **Jellyfin** TUI written with [Textual], with **mpv** playback, and resume/progress sync.
+A fast, cross-platform, keyboard‑friendly **Jellyfin** TUI written with [Textual], with **mpv** playback, and resume/progress sync.
 
 > **Status:** personal project; works great for day‑to‑day use. Feedback and PRs welcome.
 
@@ -29,7 +29,7 @@ A fast, keyboard‑friendly **Jellyfin** TUI written with [Textual], with **mpv*
 - **Python 3.10+**
 - **mpv** available on your `PATH`
   - macOS (Homebrew): `brew install mpv`
-  - Linux: your distro’s mpv package
+  - Linux: your distro’s mpv package (use Flatpak if you have issues with your distro's mpv, JellyCLI will automatically detect it)
   - Windows: mpv build + add folder to PATH
 - Python deps:
   - `textual` (TUI)
@@ -109,14 +109,14 @@ python main.py
 
 ### Key bindings
 
-| Key                 | Action                                                                    |
-|---------------------|---------------------------------------------------------------------------|
-| **Enter**           | Open / follow / play selected item                                        |
-| **Backspace**       | Go back                                                                   |
-| **Esc**             | Open quit menu                                                            |
-| **m**               | Toggle **watched / unwatched** (works in libraries, Continue Watching, Next Up) |
-| **o**               | Open in **Jellyfin web** (folders open details, items start playback)    |
-| **Ctrl+Shift+Q**    | Quit immediately                                                         |
+| Key              | Action                                                                          |
+| ---------------- | ------------------------------------------------------------------------------- |
+| **Enter**        | Open / follow / play selected item                                              |
+| **Backspace**    | Go back                                                                         |
+| **Esc**          | Open quit menu                                                                  |
+| **m**            | Toggle **watched / unwatched** (works in libraries, Continue Watching, Next Up) |
+| **o**            | Open in **Jellyfin web** (folders open details, items start playback)           |
+| **Ctrl+Shift+Q** | Quit immediately                                                                |
 
 ---
 
