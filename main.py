@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-"""Modern Textual-based Jellyfin CLI client with fixed library logic and refined styling."""
-
 from textual.app import App
 from textual.containers import Vertical, Horizontal
 from textual.widgets import Button, Input, Static, ListView, ListItem, Label
