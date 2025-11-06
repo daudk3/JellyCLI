@@ -1,6 +1,6 @@
 # JellyCLI
 
-A fast, cross-platform, keyboard‑friendly **Jellyfin** TUI written with [Textual], with **mpv** playback, and resume/progress sync.
+A fast, keyboard‑friendly TUI **Jellyfin** client written with [Textual], with **mpv** playback, and resume/progress sync.
 
 > **Status:** personal project; works great for day‑to‑day use. Feedback and PRs welcome.
 
