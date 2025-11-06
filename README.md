@@ -1,60 +1,6 @@
 # JellyCLI
 
-A minimalistic CLI tool for browsing and playing Jellyfin media.
-
-## Highlights
-
-- Minimalistic CLI interface for Jellyfin.
-- Keyboard navigation for media browsing.
-- Playback synchronization with Jellyfin server.
-- Configurable key bindings.
-- Supports multiple media types.
-
-## Setup
-
-1. Clone the repository.
-2. Install dependencies.
-3. Configure your Jellyfin server credentials.
-4. Run the tool.
-
-## Configuration
-
-```json
-{
-  "server": {
-    "url": "http://your-jellyfin-server",
-    "api_key": "your_api_key"
-  },
-  "playback": {
-    "sync_playback": true
-  },
-  "key_bindings": {
-    "play_pause": "space",
-    "next": "n",
-    "previous": "p",
-    "quit": "q"
-  }
-}
-```
-
-## Key Bindings
-
-- `space`: Play/Pause
-- `n`: Next media
-- `p`: Previous media
-- `q`: Quit the application
-
-## Playback Sync
-
-JellyCLI synchronizes playback position with the Jellyfin server to allow seamless continuation across devices.
-
-## License
-
-MIT License.
-
-# JellyCLI
-
-A fast, keyboard‑friendly **Jellyfin** TUI written with [Textual], with **mpv** playback, resume/progress sync, and smart skipping of server‑defined segments (Intro/Outro/Recap/Preview).
+A fast, keyboard‑friendly **Jellyfin** TUI written with [Textual], with **mpv** playback, and resume/progress sync.
 
 > **Status:** personal project; works great for day‑to‑day use. Feedback and PRs welcome.
 
@@ -66,8 +12,6 @@ A fast, keyboard‑friendly **Jellyfin** TUI written with [Textual], with **mpv*
 - **TV flow**: TV Shows ➝ Seasons ➝ Episodes (no episode spam at the library root)
 - **Playback in mpv** (detached, quiet). A small in‑app “Now playing” toast shows what started.
 - **Resume from server** for partially watched items; **progress sync** while watching and on pause/quit
-- **Auto‑skip segments** using Jellyfin’s segment data  
-  (Intro Skipper / server segments: *Intro, Outro, Recap, Preview*)
 - **Quick actions**:
   - **Enter**: open/follow/play (single press)
   - **Backspace**: go back
@@ -117,7 +61,6 @@ Fields:
   "username": "alice",
   "password": "••••••••",
   "show_greeting": true,
-  "skip-segments": ["Intro", "Outro", "Recap", "Preview"]
 }
 ```
 
@@ -184,23 +127,6 @@ python main.py
 - Starting from **Continue Watching** resumes from the server’s saved time.
 - While playing in mpv, JellyCLI **periodically updates progress** and also on **pause/quit** events.
 - When playback ends, the **home view refreshes**, so **Next Up** and **Continue Watching** reflect your latest state.
-
----
-
-## Segment Skipping (server‑defined)
-
-JellyCLI uses Jellyfin’s data to skip segments:
-
-1. **Segments API** (`/Items/{id}/Segments`) — preferred
-2. If unavailable, it falls back to **Chapters** (`GET /Users/{userId}/Items/{itemId}?Fields=Chapters`)
-3. Segment names are normalized to the supported set: **Intro, Outro, Recap, Preview**
-
-Control this with `skip-segments` in `config.json`:
-
-- Example: `["Intro", "Outro"]` → skips only intros and outros
-- Empty list `[]` → **disables** auto‑skip entirely
-
-> For best results, install and enable the **Intro Skipper** plugin on your Jellyfin server and let it analyze your library.
 
 ---
 
