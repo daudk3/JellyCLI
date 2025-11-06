@@ -1,4 +1,56 @@
+# JellyCLI
 
+A minimalistic CLI tool for browsing and playing Jellyfin media.
+
+## Highlights
+
+- Minimalistic CLI interface for Jellyfin.
+- Keyboard navigation for media browsing.
+- Playback synchronization with Jellyfin server.
+- Configurable key bindings.
+- Supports multiple media types.
+
+## Setup
+
+1. Clone the repository.
+2. Install dependencies.
+3. Configure your Jellyfin server credentials.
+4. Run the tool.
+
+## Configuration
+
+```json
+{
+  "server": {
+    "url": "http://your-jellyfin-server",
+    "api_key": "your_api_key"
+  },
+  "playback": {
+    "sync_playback": true
+  },
+  "key_bindings": {
+    "play_pause": "space",
+    "next": "n",
+    "previous": "p",
+    "quit": "q"
+  }
+}
+```
+
+## Key Bindings
+
+- `space`: Play/Pause
+- `n`: Next media
+- `p`: Previous media
+- `q`: Quit the application
+
+## Playback Sync
+
+JellyCLI synchronizes playback position with the Jellyfin server to allow seamless continuation across devices.
+
+## License
+
+MIT License.
 
 # JellyCLI
 
