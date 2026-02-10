@@ -25,6 +25,12 @@ A fast, keyboard‑friendly TUI **Jellyfin** client written with [Textual], with
 
 ---
 
+## System Architecture
+
+![System Architecture Diagram](assets/arch-diagram.png)
+
+---
+
 ## Requirements
 
 - **Python 3.10+**
