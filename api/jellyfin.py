@@ -1,10 +1,19 @@
+import re
+from urllib.parse import parse_qs, quote, urljoin, urlparse
+
 import requests
+
+
+CLIENT_AUTH_HEADER = 'MediaBrowser Client="JellyCLI", Device="CLI", DeviceId="1234", Version="1.0"'
+DEFAULT_DEVICE_NAME = "JellyCLI"
+DEFAULT_APP_NAME = "JellyCLI"
+DEFAULT_APP_VERSION = "1.0"
 
 
 def authenticate_jellyfin(server_url: str, username: str, password: str):
     """Authenticate against Jellyfin and return (token, user_id)."""
     headers = {
-        "X-Emby-Authorization": 'MediaBrowser Client="JellyCLI", Device="CLI", DeviceId="1234", Version="1.0"',
+        "X-Emby-Authorization": CLIENT_AUTH_HEADER,
         "Content-Type": "application/json",
     }
     payload = {"Username": username, "Pw": password}
@@ -13,6 +22,225 @@ def authenticate_jellyfin(server_url: str, username: str, password: str):
     response.raise_for_status()
     data = response.json()
     return data["AccessToken"], data["User"]["Id"]
+
+
+def get_server_name(server_url: str, token: str | None = None) -> str | None:
+    """Fetch server display name from Jellyfin."""
+    auth_headers = {"X-MediaBrowser-Token": token} if token else {}
+    endpoints = [
+        ("/System/Info", auth_headers),
+        ("/System/Info/Public", {}),
+    ]
+    for path, headers in endpoints:
+        try:
+            response = requests.get(f"{server_url.rstrip('/')}{path}", headers=headers, timeout=10)
+            response.raise_for_status()
+            data = _safe_json(response) or {}
+            if isinstance(data, dict):
+                name = data.get("ServerName") or data.get("Name")
+                if isinstance(name, str) and name.strip():
+                    return name.strip()
+        except Exception:
+            continue
+    return None
+
+
+def _safe_json(response):
+    try:
+        return response.json()
+    except Exception:
+        return None
+
+
+def get_oid_configs(server_url: str):
+    """Fetch OpenID provider configuration entries from the SSO plugin."""
+    url = f"{server_url.rstrip('/')}/sso/OID/Get"
+    response = requests.get(url, timeout=10)
+    response.raise_for_status()
+    data = _safe_json(response)
+    return data if data is not None else {}
+
+
+def _extract_provider_names(payload) -> list[str]:
+    names: list[str] = []
+    seen: set[str] = set()
+
+    def add(name):
+        if not isinstance(name, str):
+            return
+        cleaned = name.strip()
+        if not cleaned or cleaned in seen:
+            return
+        seen.add(cleaned)
+        names.append(cleaned)
+
+    def walk(node):
+        if isinstance(node, str):
+            add(node)
+            return
+        if isinstance(node, list):
+            for item in node:
+                walk(item)
+            return
+        if not isinstance(node, dict):
+            return
+
+        lowered = {str(k).lower(): v for k, v in node.items()}
+        maybe_name = lowered.get("providername") or lowered.get("provider") or lowered.get("name")
+        enabled = lowered.get("enabled")
+        if isinstance(maybe_name, str) and (enabled is None or bool(enabled)):
+            add(maybe_name)
+
+        for key, value in node.items():
+            if isinstance(value, dict):
+                value_keys = {str(k).lower() for k in value.keys()}
+                if "oidendpoint" in value_keys or "oidclientid" in value_keys:
+                    is_enabled = value.get("enabled", value.get("Enabled", True))
+                    if bool(is_enabled):
+                        add(str(key))
+                walk(value)
+            elif isinstance(value, list):
+                walk(value)
+
+    walk(payload)
+    return names
+
+
+def get_oid_provider_names(server_url: str) -> list[str]:
+    """Return configured OpenID provider names from the SSO plugin."""
+    return _extract_provider_names(get_oid_configs(server_url))
+
+
+def get_oid_states(server_url: str):
+    """Fetch active OpenID states from the SSO plugin."""
+    url = f"{server_url.rstrip('/')}/sso/OID/States"
+    response = requests.get(url, timeout=10)
+    response.raise_for_status()
+    data = _safe_json(response)
+    return data if data is not None else []
+
+
+def extract_oid_states(payload) -> list[str]:
+    """Best-effort extraction of state values from OID/States response payload."""
+    states: list[str] = []
+    seen: set[str] = set()
+
+    def add(value):
+        if not isinstance(value, str):
+            return
+        cleaned = value.strip()
+        if len(cleaned) < 8 or cleaned in seen:
+            return
+        seen.add(cleaned)
+        states.append(cleaned)
+
+    def walk(node):
+        if isinstance(node, str):
+            add(node)
+            return
+        if isinstance(node, list):
+            for item in node:
+                walk(item)
+            return
+        if not isinstance(node, dict):
+            return
+
+        state_value = node.get("state", node.get("State"))
+        add(state_value)
+
+        for key, value in node.items():
+            key_l = str(key).lower()
+            if key_l not in {"state", "provider", "providername", "name", "enabled", "id", "key", "items", "data"}:
+                add(str(key))
+            if isinstance(value, (dict, list, str)):
+                walk(value)
+
+    walk(payload)
+    return states
+
+
+def get_oid_start_url(server_url: str, provider_name: str) -> str:
+    provider = quote(provider_name.strip(), safe="")
+    return f"{server_url.rstrip('/')}/sso/OID/start/{provider}"
+
+
+def begin_oid_authorization(server_url: str, provider_name: str):
+    """
+    Initiate OIDC login and return (authorization_url, state_or_none).
+    This lets non-browser clients track a concrete state value.
+    """
+    start_url = get_oid_start_url(server_url, provider_name)
+    response = requests.get(start_url, allow_redirects=False, timeout=10)
+
+    auth_url = None
+    if response.status_code in (301, 302, 303, 307, 308):
+        location = response.headers.get("Location")
+        if location:
+            auth_url = urljoin(f"{server_url.rstrip('/')}/", location)
+    elif response.status_code == 200:
+        # Best-effort parse in case a reverse proxy/plugin serves an HTML redirect page.
+        body = response.text or ""
+        match = re.search(r"""window\.location(?:\.href)?\s*=\s*["']([^"']+)["']""", body)
+        if not match:
+            match = re.search(
+                r"""<meta[^>]+http-equiv=["']refresh["'][^>]+url=([^"'>\s]+)""",
+                body,
+                flags=re.IGNORECASE,
+            )
+        if match:
+            auth_url = urljoin(f"{server_url.rstrip('/')}/", match.group(1))
+
+    if not auth_url:
+        # Fallback for unknown server behavior; browser can still start with the public endpoint.
+        auth_url = start_url
+
+    state = parse_qs(urlparse(auth_url).query).get("state", [None])[0]
+    if isinstance(state, str):
+        state = state.strip() or None
+    else:
+        state = None
+
+    return auth_url, state
+
+
+def authenticate_oid_state(
+    server_url: str,
+    provider_name: str,
+    state: str,
+    device_id: str,
+    device_name: str = DEFAULT_DEVICE_NAME,
+    app_name: str = DEFAULT_APP_NAME,
+    app_version: str = DEFAULT_APP_VERSION,
+):
+    """
+    Exchange an OIDC flow state for Jellyfin credentials via the SSO plugin.
+    Returns (token, user_id, username_or_none).
+    """
+    provider = quote(provider_name.strip(), safe="")
+    url = f"{server_url.rstrip('/')}/sso/OID/Auth/{provider}"
+    headers = {
+        "X-Emby-Authorization": CLIENT_AUTH_HEADER,
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "deviceId": device_id,
+        "deviceName": device_name,
+        "appName": app_name,
+        "appVersion": app_version,
+        "data": state,
+    }
+    response = requests.post(url, json=payload, headers=headers, timeout=10)
+    response.raise_for_status()
+    data = response.json()
+
+    token = data.get("AccessToken")
+    user = data.get("User") or {}
+    user_id = user.get("Id") or data.get("UserId")
+    username = user.get("Name") or user.get("Username") or data.get("Username")
+
+    if not token or not user_id:
+        raise ValueError("SSO authentication response missing token or user id")
+    return token, user_id, username
 
 
 def get_libraries(server_url: str, token: str, user_id: str):

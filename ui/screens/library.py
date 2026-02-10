@@ -11,6 +11,7 @@ from api.jellyfin import (
     get_items_in_library,
     get_libraries,
     get_next_up,
+    get_server_name,
     search_library,
 )
 from config import load_config
@@ -52,8 +53,14 @@ class LibraryScreen(Screen):
         yield Input(placeholder="Search all media...", id="search-input")
         yield ListView(id="home-list")
 
+    def _update_title(self):
+        server_name = get_server_name(self.server_url, self.token)
+        title = f"{server_name} • JellyCLI" if server_name else "JellyCLI Home"
+        self.query_one("#title", Static).update(f"[b]{title}[/b]")
+
     def on_mount(self):
         self.app.home_screen = self
+        self._update_title()
         lv = self.query_one("#home-list", ListView)
         # Greeting
         self.update_greeting()
