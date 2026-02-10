@@ -124,6 +124,8 @@ class ConfirmQuitScreen(ModalScreen):
             config = load_config()
             config.pop("username", None)
             config.pop("password", None)
+            config.pop("access_token", None)
+            config.pop("user_id", None)
             save_config(config)
             self.app.pop_screen()
             self.app.push_screen(LoginScreen())

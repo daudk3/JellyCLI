@@ -24,6 +24,23 @@ def authenticate_jellyfin(server_url: str, username: str, password: str):
     return data["AccessToken"], data["User"]["Id"]
 
 
+def authenticate_with_token(server_url: str, token: str):
+    """
+    Validate an existing Jellyfin access token and return (token, user_id, username_or_none).
+    Raises on invalid token.
+    """
+    headers = {"X-MediaBrowser-Token": token}
+    url = f"{server_url.rstrip('/')}/Users/Me"
+    response = requests.get(url, headers=headers, timeout=10)
+    response.raise_for_status()
+    data = response.json()
+    user_id = data.get("Id")
+    username = data.get("Name") or data.get("Username")
+    if not user_id:
+        raise ValueError("Token validation response missing user id")
+    return token, user_id, username
+
+
 def get_server_name(server_url: str, token: str | None = None) -> str | None:
     """Fetch server display name from Jellyfin."""
     auth_headers = {"X-MediaBrowser-Token": token} if token else {}

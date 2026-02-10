@@ -96,6 +96,8 @@ class LoginScreen(Screen):
             self._set_message("[green]Authenticated![/]")
             config["username"] = user
             config["password"] = pw
+            config["access_token"] = token
+            config["user_id"] = uid
             save_config(config)
             self.app.config = config
             self.app.push_screen(LibraryScreen(server_url, token, uid))
@@ -252,6 +254,8 @@ class LoginScreen(Screen):
             config["username"] = username.strip()
         config.pop("password", None)
         config["oid_provider"] = provider
+        config["access_token"] = token
+        config["user_id"] = uid
         save_config(config)
         self.app.config = config
 
