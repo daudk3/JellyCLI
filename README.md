@@ -28,7 +28,7 @@ A fast, keyboard‑friendly TUI **Jellyfin** client written with [Textual], with
 ## Requirements
 
 - **Python 3.10+**
-- **Jellyfin server** with the [jellyfin-plugin-sso](https://github.com/9p4/jellyfin-plugin-sso) plugin installed (for OIDC SSO)
+- **Jellyfin server (version 10.10.7+)** with the [jellyfin-plugin-sso](https://github.com/9p4/jellyfin-plugin-sso) plugin installed (for OIDC SSO)
 - At least one **OIDC provider** configured and enabled in the SSO plugin (if using SSO login)
 - **mpv** available on your `PATH`
   - macOS (Homebrew): `brew install mpv`
