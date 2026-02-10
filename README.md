@@ -29,7 +29,7 @@ A fast, keyboard‑friendly TUI **Jellyfin** client written with [Textual], with
 
 <video src="assets/demo.mp4" controls></video>
 
-[Download demo video](assets/demo.mp4)
+[Demo](assets/demo.gif)
 
 ---
 
