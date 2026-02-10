@@ -38,8 +38,6 @@ A fast, keyboard‑friendly TUI **Jellyfin** client written with [Textual], with
 Install deps:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install textual requests
 ```
 
@@ -135,7 +133,7 @@ Issues and PRs are welcome. Please describe your setup (OS, Python, mpv version,
 
 ## License
 
-See **LICENSE** in this repository.
+The source code for JellyCLI is available under the GPLv3 license. See **LICENSE** in this repository.
 
 ---
 
