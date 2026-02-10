@@ -25,6 +25,14 @@ A fast, keyboard‑friendly TUI **Jellyfin** client written with [Textual], with
 
 ---
 
+## Demo
+
+<video src="assets/demo.mp4" controls></video>
+
+[Download demo video](assets/demo.mp4)
+
+---
+
 ## System Architecture
 
 ![System Architecture Diagram](assets/arch-diagram.png)
